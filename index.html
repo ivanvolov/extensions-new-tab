@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="media/favicon.svg">
+    <link rel="stylesheet" href="style.css">
+    <title>Custom Homepage</title>
+</head>
+<body>
+    <div id="numberInputDisplay" class="number-input-display"></div>
+    <div id="backIndicator" class="back-indicator">1 - Back</div>
+
+    <div id="airQualityContainer" style="display: none;">
+        <div class="air-quality-box">
+            <div class="air-quality-title">Air Quality</div>
+            <div class="air-quality-stats">
+                <div class="stat">
+                    <span class="label">PM2.5:</span>
+                    <span id="pm25" class="value">--</span>
+                </div>
+                <div class="stat">
+                    <span class="label">PM10:</span>
+                    <span id="pm10" class="value">--</span>
+                </div>
+                <div class="stat">
+                    <span id="airStatus" class="value">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bookmarksContainer">
+        <div class="bookmark">
+            <div class="bookmark-box bookmark-add" id="addBookmarkBtn">+</div>
+        </div>
+    </div>
+
+    <div class="file-operations">
+        <button id="syncBtn" class="file-btn" title="Sync">🔄</button>
+        <button id="wallpaperBtn" class="file-btn" title="Wallpaper">🖼️</button>
+        <button id="historyBtn" class="file-btn" title="Version History" style="display: none;">🕐</button>
+        <button id="lockModeBtn" class="file-btn" title="Lock mode: preview the corp view, click items to lock/unlock" style="display: none;">🔒</button>
+    </div>
+
+    <div id="historyModal">
+        <div class="modal-content history-modal-content">
+            <h2>Version History</h2>
+            <div id="historyList" class="history-list">
+                <div class="history-loading">Loading…</div>
+            </div>
+            <div class="modal-buttons">
+                <button id="historyCloseBtn" class="cancel-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="wallpaperModal">
+        <div class="modal-content wallpaper-modal-content">
+            <h2>Wallpaper</h2>
+            <div id="wallpaperGrid" class="wallpaper-grid">
+                <div class="history-loading">Loading…</div>
+            </div>
+            <label id="wallpaperUploadRow" class="wallpaper-upload" style="display: none;">
+                <input type="file" id="wallpaperFile" accept="image/png,image/jpeg,image/webp">
+                <span id="wallpaperUploadStatus"></span>
+            </label>
+            <div class="modal-buttons">
+                <button id="wallpaperCloseBtn" class="cancel-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="setupModal">
+        <div class="modal-content">
+            <h2>Connect</h2>
+            <p class="setup-hint">Paste the access token issued for this machine. It is stored only in this browser's extension storage.</p>
+            <input type="password" id="setupToken" placeholder="Access token">
+            <div class="modal-buttons">
+                <button id="setupSaveBtn" class="save-btn">Save</button>
+            </div>
+            <div id="setupError" class="setup-error"></div>
+        </div>
+    </div>
+
+    <div id="bookmarkModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add Bookmark</h2>
+            <div class="type-selector">
+                <button id="bookmarkType" class="type-btn active">Bookmark</button>
+                <button id="folderType" class="type-btn">Folder</button>
+            </div>
+            <input type="text" id="bookmarkName" placeholder="Site Name">
+            <input type="text" id="bookmarkURL" placeholder="URL" class="bookmark-input">
+            <div id="iconSelector" class="type-selector icon-selector">
+                <button id="iconUrlMode" class="type-btn active">Icon URL</button>
+                <button id="iconFileMode" class="type-btn">Icon file</button>
+            </div>
+            <input type="text" id="bookmarkIcon" placeholder="Icon URL (optional)" class="bookmark-input">
+            <label id="iconFileRow" class="icon-file-label bookmark-input" style="display: none;">
+                <input type="file" id="bookmarkIconFile" accept="image/png,image/jpeg,image/webp,image/x-icon">
+                <span id="iconFileStatus" class="icon-file-status" style="display: none;">
+                    <img id="iconFilePreview" alt="">
+                    <span>icon uploaded</span>
+                </span>
+            </label>
+            <div class="modal-buttons">
+                <button id="deleteBtn" class="delete-btn" style="display: none;">Delete</button>
+                <button id="cancelBtn" class="cancel-btn">Cancel</button>
+                <button id="saveBtn" class="save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+    <div id="searchOverlay">
+        <div class="search-content">
+            <input type="text" id="searchInput" placeholder="Search bookmarks...">
+            <div id="searchResults" class="search-results-grid"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,734 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    background: url('content/main.png') no-repeat center center fixed;
+    background-size: cover;
+}
+#bookmarksContainer {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 100px);
+    grid-template-rows: repeat(auto-fill, 100px);
+    gap: 20px;
+    padding: 20px;
+}
+.bookmark {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 100px;
+    height: 100px;
+}
+.bookmark-box {
+    width: 80px;
+    height: 80px;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    position: relative;
+}
+.bookmark-box:hover {
+    transform: scale(1.05);
+}
+.bookmark-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    user-select: none;
+}
+.bookmark-icon.fallback {
+    background-color: #4a90e2;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+}
+.bookmark-icon img {
+    max-width: 50px;
+    max-height: 50px;
+}
+.bookmark-name {
+    font-size: 12px;
+    color: white;
+    text-align: center;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 0 3px rgba(0,0,0,0.7);
+    pointer-events: none;
+    user-select: none;
+}
+.bookmark-add {
+    background-color: rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: #666;
+    font-size: 30px;
+    user-select: none;
+}
+.grid-cell {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    pointer-events: none;
+    transition: background-color 0.2s;
+}
+.grid-cell.highlight {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+/* Modal styles remain the same */
+#bookmarkModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+}
+/* Search overlay - not a layer floating above the page: no dim, no blur, so
+   the wallpaper and icons read exactly like the normal page underneath
+   (which gets hidden via body.search-active below). */
+#searchOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 3000;
+    overflow-y: auto;
+}
+/* Everything else on the page disappears while search is open: sync/history
+   buttons, the add tile + rest of the folder grid, the back indicator, air
+   quality. Search becomes the only thing on screen, like a new top layer. */
+body.search-active #bookmarksContainer,
+body.search-active .file-operations,
+body.search-active #airQualityContainer,
+body.search-active .back-indicator {
+    display: none !important;
+}
+.search-content {
+    width: 960px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10vh 0 40px;
+}
+#searchInput {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 600px;
+    padding: 16px 20px;
+    font-size: 20px;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: 12px;
+    margin: 0 0 30px 0;
+    text-align: center;
+}
+#searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+.search-results-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(8, 100px);
+    grid-auto-rows: minmax(100px, auto);
+    gap: 20px;
+    justify-content: center;
+    padding: 5px;
+}
+#searchResults .bookmark {
+    height: auto;
+    min-height: 100px;
+}
+.search-result-subtitle {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 0 3px rgba(0,0,0,0.7);
+    pointer-events: none;
+    user-select: none;
+}
+.search-result-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    padding: 20px;
+}
+input {
+    width: 100%;
+    margin: 10px 0;
+    padding: 5px;
+}
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    user-select: none;
+}
+.delete-btn {
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: auto;
+    user-select: none;
+}
+.save-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+.cancel-btn {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+/* Add these styles to your existing style.css file */
+
+.file-operations {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.file-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(5px);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.file-btn:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.35);
+}
+
+.file-btn.sync-success {
+    background-color: rgba(76, 175, 80, 0.7);
+}
+
+.file-btn.sync-error {
+    background-color: rgba(255, 68, 68, 0.7);
+}
+
+/* Wallpaper modal - same backdrop + centered-panel pattern as #historyModal,
+   with a thumbnail grid instead of the version list. */
+#wallpaperModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.wallpaper-modal-content {
+    width: 460px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.wallpaper-grid {
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.wallpaper-tile {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 3px solid transparent;
+    background: #e8e8e8;
+    transition: border-color 0.15s, transform 0.15s;
+}
+
+.wallpaper-tile:hover {
+    transform: scale(1.02);
+}
+
+.wallpaper-tile.selected {
+    border-color: #4a90e2;
+}
+
+.wallpaper-tile.broken {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.wallpaper-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.wallpaper-tile-name {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 2px 6px;
+    font-size: 11px;
+    color: white;
+    background: rgba(0,0,0,0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wallpaper-upload {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
+.wallpaper-upload input[type="file"] {
+    font-size: 12px;
+}
+
+/* History modal - same backdrop + centered-panel pattern as #bookmarkModal,
+   but with a scrollable version list instead of the bookmark-edit fields. */
+#historyModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.history-modal-content {
+    width: 380px;
+    max-width: 90vw;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-list {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.history-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border: 1px solid #e3e3e3;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.history-row:hover {
+    background-color: #f5faf5;
+    border-color: #4CAF50;
+}
+
+.history-row.is-current {
+    border-color: #4CAF50;
+    background-color: #f3faf3;
+}
+
+.history-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    white-space: nowrap;
+    min-width: 28px;
+}
+
+.history-tags {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.history-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.history-tag.tag-current {
+    background: #e2f3e2;
+    color: #2e7d32;
+}
+
+.history-tag.tag-copy {
+    background: #ececec;
+    color: #555;
+}
+
+.history-tag.tag-corp {
+    background: #fff0e0;
+    color: #b25b00;
+}
+
+.history-date {
+    font-size: 12.5px;
+    color: #444;
+    white-space: nowrap;
+}
+
+.history-meta {
+    font-size: 11.5px;
+    color: #aaa;
+    white-space: nowrap;
+    min-width: 52px;
+    text-align: right;
+}
+
+.history-loading,
+.history-error,
+.history-empty {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    padding: 20px;
+}
+
+.history-error {
+    color: #ff4444;
+}
+
+.number-input-display {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 48px;
+    font-weight: bold;
+    padding: 20px 40px;
+    border-radius: 15px;
+    z-index: 2000;
+    display: none;
+    min-width: 100px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.number-input-display.visible {
+    display: block;
+}
+
+.back-indicator {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 10px;
+    z-index: 1000;
+    display: none;
+}
+
+.back-indicator.visible {
+    display: block;
+}
+
+#airQualityContainer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.air-quality-box {
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    padding: 15px;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.air-quality-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.air-quality-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.stat .label {
+    margin-right: 10px;
+}
+
+#airStatus {
+    font-size: 1.1em;
+    margin-top: 8px;
+    text-align: center;
+    color: white;
+}
+
+.type-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.type-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.type-btn.active {
+    background: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+.folder-input {
+    display: none;
+}
+
+.bookmark-input {
+    display: block;
+}
+
+.folder-icon {
+    background-color: rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.folder-icon::before {
+    content: "📁";
+}
+
+/* Yellow background only for the folder you're currently inside */
+.folder-icon[data-is-back-folder="true"] {
+    background-color: #ffa500;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.bookmark-number {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+}
+/* Locked placeholder - the corp view of a cell it must not touch: visibly
+   occupied, deliberately mute (no name, no icon, no interaction). */
+.locked-placeholder {
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 2px dashed rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+.locked-placeholder.folder-icon::before {
+    content: "";
+}
+
+/* Master-side marker on a locked item: passive symbol only. Lock editing
+   happens in lock mode (the bottom-right button), never on the item. */
+.lock-badge {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    font-size: 11px;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.85;
+}
+
+/* Lock mode: the bottom-right button lights up, and every item at the
+   current level becomes a toggle target rendered the way corp sees it. */
+.file-btn.active {
+    background-color: #ffa500;
+    border-color: #ffa500;
+}
+
+.lock-mode-target .bookmark-box {
+    cursor: pointer;
+}
+
+.lock-mode-target .bookmark-box:hover {
+    outline: 2px solid #ffa500;
+    outline-offset: 2px;
+}
+
+/* Setup modal - same backdrop + panel pattern as #bookmarkModal. */
+#setupModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+}
+.setup-hint {
+    font-size: 12px;
+    color: #555;
+    margin: 0 0 10px;
+}
+.setup-error {
+    font-size: 12px;
+    color: #c0392b;
+    margin-top: 8px;
+    min-height: 14px;
+}
+
+.icon-file-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #555;
+    margin: 8px 0;
+}
+
+.lock-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    margin: 8px 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* "There IS a stored icon" indicator beside the file input - a file input
+   cannot be prefilled, so without this an uploaded icon reads as absent. */
+.icon-file-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #2e7d32;
+    white-space: nowrap;
+}
+.icon-file-status img {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: contain;
+}

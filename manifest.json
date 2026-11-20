@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Custom New Tab",
+  "version": "2.0",
+  "description": "Custom new tab page with bookmarks",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://newtab.ivikkk.xyz/*"
+  ],
+  "icons": {
+    "16": "media/icon.png",
+    "48": "media/icon.png",
+    "128": "media/icon.png",
+    "256": "media/icon.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}
